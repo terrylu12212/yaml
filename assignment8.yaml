@@ -1,0 +1,140 @@
+openapi: 3.0.4
+info:
+  title: Movie Payments API
+  description: This API will either return a list of movie payments for the respective user, add a payment for the user, or cancel a payment for the user.
+  version: 0.1.9
+
+servers:
+  - url: http://movie-theatre-example.com/v1
+    description: This server will communicate with APIs to support the business process of search and payment for a movie seat.
+
+paths:
+  /payments:
+    get:
+      summary: Returns a list of payments for a user
+      description: Given a user ID, search for all payments made by the user in the system.
+      parameters:
+        - in: query
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The ID of the user to retrieve payments for
+      responses:
+        "200": # status code
+          description: A JSON object of of payment IDs, and the fields attributed for the payment id, which includes payment amount, movie selected, selected time, and selected seat.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    payment_id:
+                      type: string
+                      description: Identifier for the payment
+                    payment_amount:
+                      type: number
+                      description: Cost of the movie ticket
+                    movie_selected:
+                      type: string
+                      description: The name of the movie paid for
+                    selected_time:
+                      type: DateTime
+                      description: The time of the movie paid for
+                    selected_seat:
+                      type: string
+                      description: The seat number selected of the movie paid for
+        "404":
+          description: Server error response if no payments are found for the user ID argument
+
+    post:
+      summary: Post a payment for the user, return a success or failure message
+      description: Given a user ID, payment amount, selected movie, selected time, and selected seat, attempt to add a payment to the system state.
+      requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+        properties:
+          name: user_id
+          required: true
+          schema:
+            type: string
+          description: The ID of the user to post a payment for
+
+          name: payment_amount
+          required: true
+          schema:
+            type: number
+          description: The cost of the movie ticket
+
+          name: movie_selected
+          required: true
+          schema:
+            type: string
+          description: The name of the movie selected
+
+          name: selected_time
+          required: true
+          schema:
+            type: DateTime
+          description: The time of the movie selected
+
+          name: selected_seat
+          required: true
+          schema:
+            type: string
+          description: The seat selected for the movie
+      responses:
+        "201": # status code
+          description: A JSON object of the payment ID and a success message.
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  type: object
+                  properties:
+                    payment_id:
+                      type: string
+                      description: Identifier for the payment
+                    message:
+                      type: string
+                      description: Will state that the payment was successful
+                   
+        "400":
+          description: Server error response if the payment request is not valid, which can be from invalid user_id, or other fields that are not valid such as movie_time
+
+    delete:
+    summary: Returns the payment id of the cancelled payment if successful, otherwise return a server error message
+    description: Will try to remove from backend state the payment that is specified in the query parameter by payment id.
+    parameters:
+      - in: query
+        name: payment_id
+        required: true
+        schema:
+          type: string
+        description: The ID of the payment to be cancelled
+    responses:
+      "200": # status code
+        description: A JSON object of the payment ID that was deleted and a success message
+        content:
+          application/json:
+            schema:
+              type: object
+              items:
+                type: object
+                properties:
+                  payment_id:
+                    type: string
+                    description: Identifier for the payment cancelled
+                  message:
+                    type: string
+                    description: Will say that the payment was deleted
+      "404":
+        description: Server error response if no payments are found for the user ID argument
+      "400":
+        description: Server error response if the payment_id provided is not valid
+        
+
